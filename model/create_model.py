@@ -1,3 +1,4 @@
+#imports
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
@@ -13,41 +14,51 @@ import imghdr
 import os
 import numpy as np
 import matplotlib.image as mpimg
+from datetime import date
 
+# gets todays date for model release number
+today = date.today()
+
+# sets up parameters for neural network
 batch_size = 32
 img_height = 256 
 img_width= 256 
+
+# specifies directory in which to retrieve data
 data_path = "/Users/nealkotval/fire_recognition/data"
 
+# line to prevent out of memory errors
 gpus = tf.config.experimental.list_physical_devices('GPU')
 for gpu in gpus: 
     tf.config.experimental.set_memory_growth(gpu, True)
-    
+
+#sets up training dataset
 train_ds = tf.keras.utils.image_dataset_from_directory(
   data_path,
-  validation_split=0.2,
-  subset="training",
-  seed=123,
-  image_size=(img_height, img_width),
-  batch_size=batch_size
+  validation_split = 0.2, # training: 80% , testing: 20%
+  subset = "training",
+  seed = 101, # allows us to keep same random set for both validation and testing
+  image_size = (img_height, img_width),
+  batch_size = batch_size 
 )
 
-val_ds = tf.keras.utils.image_dataset_from_directory(
+#sets up testing dataset
+validation_ds = tf.keras.utils.image_dataset_from_directory(
   data_path,
-  validation_split=0.2,
+  validation_split=0.2, # training: 80% , testing: 20%
   subset="validation",
-  seed=123,
+  seed=101, # allows us to keep same random set for both validation and testing
   image_size=(img_height, img_width),
   batch_size=batch_size
 )
 
+#stores class names in order for us to set fire = 0, non_fire = 1
 class_names = train_ds.class_names
-print(class_names)
 
-AUTOTUNE = tf.data.AUTOTUNE
-
-train_ds = train_ds.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE)
-val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
+# preprocessing
+AUTOTUNE = tf.data.AUTOTUNE # allows for us to decouple data production from consumption
+train_ds = train_ds.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE) # caches certain operations to make run faster for training dataset
+validation_ds = validation_ds.cache().prefetch(buffer_size=AUTOTUNE) # caches certain operations to make run faster for validation dataset
 
 num_classes = len(class_names)
 
@@ -62,6 +73,7 @@ data_augmentation = keras.Sequential(
   ]
 )
 
+# builds model, utilizing rectified linear as activation
 model = Sequential([
   data_augmentation,
   layers.Rescaling(1./255),
@@ -80,36 +92,18 @@ model = Sequential([
 model.compile(optimizer='adam',
               loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
               metrics=['accuracy'])
-              
-epochs = 15
+
+# sets amount of epochs for dataset 
+epochs = 1
+
+# passes datasets into model for training
 history = model.fit(
   train_ds,
-  validation_data=val_ds,
+  validation_data=validation_ds,
   epochs=epochs
 )
 
-acc = history.history['accuracy']
-val_acc = history.history['val_accuracy']
-
-loss = history.history['loss']
-val_loss = history.history['val_loss']
-
-epochs_range = range(epochs)
-
-plt.figure(figsize=(8, 8))
-plt.subplot(1, 2, 1)
-plt.plot(epochs_range, acc, label='Training Accuracy')
-plt.plot(epochs_range, val_acc, label='Validation Accuracy')
-plt.legend(loc='lower right')
-plt.title('Training and Validation Accuracy')
-
-plt.subplot(1, 2, 2)
-plt.plot(epochs_range, loss, label='Training Loss')
-plt.plot(epochs_range, val_loss, label='Validation Loss')
-plt.legend(loc='upper right')
-plt.title('Training and Validation Loss')
-plt.show()
-
+# predict function
 def predict_fire(img_path, model, resize = True, output = False, imshow = False):
     img = tf.keras.utils.load_img(
         img_path
@@ -139,12 +133,14 @@ def predict_fire(img_path, model, resize = True, output = False, imshow = False)
         
     return class_names[np.argmax(score)]
 
+
+# calls predict function as a print statement
 print(predict_fire('/Users/nealkotval/fire_recognition/test_cases/nonfire5.jpg', model, imshow = True, output= True))
 
-# Convert the model.
+#saves as tf-lite model
 converter = tf.lite.TFLiteConverter.from_keras_model(model)
 tflite_model = converter.convert()
 
-# Save the model.
-with open('model_15epochs.tflite', 'wb') as f:
+#stores model release as model(date)_epoch(# of epochs used)
+with open("tflite_store/model{}_epoch{}".format(today.strftime("%m-%d-%y"), epochs), 'wb') as f:
   f.write(tflite_model)
