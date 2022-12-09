@@ -28,10 +28,16 @@ def predict_fire(img, modelp):
 
     classify = interpreter.get_signature_runner('serving_default')
     predictions = classify(sequential_input=img_array)['output']
-    score = tflite.nn.softmax(predictions)
+    # score = tf.nn.softmax(predictions)
+    if predictions[0][0] > predictions [0][1]:
+      predictions[0][0] = 1;
+      predictions[0][1] = 0
+    else:
+      predictions[0][1] = 1;
+      predictions[0][0] = 0
 
     #switches inputs 0 <-> 1, 1 = fire, 0 = non-fire
-    return (-np.argmax(score)+1)
+    return (-np.argmax(predictions)+1)
   
 vid = cv2.VideoCapture(0)
   
