@@ -1,4 +1,4 @@
-
+from pathlib import Path
 
 try:
   # Import TFLite interpreter from tflite_runtime package if it's available.
@@ -37,7 +37,9 @@ vid = cv2.VideoCapture(0)
   
 while(True):
     ret, frame = vid.read()
-    print(predict_fire(img=frame, modelp="/Users/nealkotval/fire_recognition/tflite_store/model_15epochs.tflite"))
+    path = Path("tflite_store/model_15epochs.tflite").absolute()
+    # print(path.absolute())
+    print(predict_fire(img=frame, modelp=str(path)))
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
