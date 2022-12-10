@@ -1,4 +1,6 @@
 from pathlib import Path
+import time
+import RPi.GPIO as GPIO
 
 try:
   # Import TFLite interpreter from tflite_runtime package if it's available.
@@ -10,6 +12,10 @@ except ImportError:
 
 import numpy as np
 import cv2
+
+GPIO.setmode(GPIO.BCM)
+
+GPIO.setup(18, GPIO.OUT)
 
 
 def prep(img):
@@ -40,14 +46,22 @@ def predict_fire(img, modelp):
     return (-np.argmax(predictions)+1)
   
 vid = cv2.VideoCapture(0)
-  
-while(True):
-    ret, frame = vid.read()
-    path = Path("tflite_store/model_15epochs.tflite").absolute()
-    # print(path.absolute())
-    print(predict_fire(img=frame, modelp=str(path)))
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
 
-vid.release()
-cv2.destroyAllWindows()
+try:
+  while(True):
+      ret, frame = vid.read()
+      path = Path("tflite_store/model_15epochs.tflite").absolute()
+      # print(path.absolute())
+      store = predict_fire(img=frame, modelp=str(path))
+      print(store)
+      if (store == 1) {
+        GPIO.output(18, GPIO.HIGH)
+      } else {
+        GPIO.output(18, GPIO.LOW)
+      }
+      time.sleep(3)
+
+except KeyboardInterrupt:
+  print("Cleaned Up!")
+  vid.release()
+  cv2.destroyAllWindows()
