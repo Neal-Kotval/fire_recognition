@@ -63,5 +63,5 @@ try:
 
 except KeyboardInterrupt:
   print("Cleaned Up!")
+  GPIO.cleanup()
   vid.release()
-  cv2.destroyAllWindows()
