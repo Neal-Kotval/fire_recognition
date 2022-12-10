@@ -54,11 +54,10 @@ try:
       # print(path.absolute())
       store = predict_fire(img=frame, modelp=str(path))
       print(store)
-      if (store == 1) {
+      if (store == 1):
         GPIO.output(18, GPIO.HIGH)
-      } else {
+      else:
         GPIO.output(18, GPIO.LOW)
-      }
       time.sleep(3)
 
 except KeyboardInterrupt:
