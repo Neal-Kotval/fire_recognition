@@ -1,6 +1,7 @@
 from pathlib import Path
 import time
 import RPi.GPIO as GPIO
+from PIL import Image
 
 try:
   # Import TFLite interpreter from tflite_runtime package if it's available.
@@ -25,11 +26,13 @@ def prep(img):
     img_array = np.expand_dims(img_array, axis=1)
     return img_array
 
-def predict_fire(img, modelp):
+def predict_fire(img, pret):
 
-    interpreter = Interpreter(model_path=modelp)
-    img_array = np.asarray(cv2.resize(img, (256,256), interpolation = cv2.INTER_AREA), dtype=np.float32)
-    img_array = np.expand_dims(img_array, axis=0)
+    interpreter = pret
+    interpreter.allocate_tensors()
+    prep = Image.fromarray(img).convert('RGB').resize((256, 256))
+    # img_array = np.asarray(cv2.resize(img, (256,256), interpolation = cv2.INTER_AREA), dtype=np.float32)
+    img_array = np.expand_dims(np.array(np.asarray(prep), dtype=np.float32), axis=0)
 
 
     classify = interpreter.get_signature_runner('serving_default')
@@ -46,13 +49,14 @@ def predict_fire(img, modelp):
     return (-np.argmax(predictions)+1)
   
 vid = cv2.VideoCapture(0)
+interpreter = Interpreter(model_path=str(path))
 
 try:
   while(True):
       ret, frame = vid.read()
       path = Path("tflite_store/model_15epochs.tflite").absolute()
       # print(path.absolute())
-      store = predict_fire(img=frame, modelp=str(path))
+      store = predict_fire(img=frame, pret=interpreter)
       print(store)
       if (store == 1):
         GPIO.output(18, GPIO.HIGH)

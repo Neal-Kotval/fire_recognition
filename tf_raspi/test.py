@@ -1,5 +1,7 @@
 from pathlib import Path
 import time
+from PIL import Image
+
 
 
 try:
@@ -18,8 +20,10 @@ def predict_fire(img, pret):
 
     interpreter = pret
     interpreter.allocate_tensors()
-    img_res = cv2.resize(img, (256,256), interpolation=cv2.INTER_AREA)
-    img_array = np.array([img_res], dtype=np.float32)
+    prep = Image.fromarray(img).convert('RGB').resize((256, 256))
+    # img_array = cv2.resize(prep, (256,256), interpolation=cv2.INTER_AREA)
+    img_array = np.expand_dims(np.array(np.asarray(prep), dtype=np.float32), axis=0)
+    
 
 
     classify = interpreter.get_signature_runner('serving_default')
