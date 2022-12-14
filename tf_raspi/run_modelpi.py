@@ -49,7 +49,7 @@ def predict_fire(img, pret):
     return (-np.argmax(predictions)+1)
   
 vid = cv2.VideoCapture(0)
-interpreter = Interpreter(model_path=str(path))
+interpreter = Interpreter(model_path=str("/home/nealkotval/fire_recognition/tflite_store/model_15epochs.tflite"))
 
 try:
   while(True):
