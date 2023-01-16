@@ -24,7 +24,7 @@ img_height = 256
 img_width= 256 
 
 # specifies directory in which to retrieve data
-data_path = "/Users/nealkotval/fire_recognition/data"
+data_path = "./fire_data/data"
 
 # line to prevent out of memory errors
 gpus = tf.config.experimental.list_physical_devices('GPU')
@@ -55,7 +55,7 @@ validation_ds = tf.keras.utils.image_dataset_from_directory(
 class_names = train_ds.class_names
 
 # preprocessing
-AUTOTUNE = tf.data.AUTOTUNE # allows for us to decouple data production from consumption
+AUTOTUNE = tf.data.AUTOTUNE 
 train_ds = train_ds.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE) # caches certain operations to make run faster for training dataset
 validation_ds = validation_ds.cache().prefetch(buffer_size=AUTOTUNE) # caches certain operations to make run faster for validation dataset
 
@@ -156,7 +156,6 @@ def predict_fire(img_path, model, resize = True, output = False, imshow = False)
 
 
 # calls predict function as a print statement
-print(predict_fire('/Users/nealkotval/fire_recognition/test_cases/nonfire5.jpg', model, imshow = True, output= True))
 
 #saves as tf-lite model
 converter = tf.lite.TFLiteConverter.from_keras_model(model)
