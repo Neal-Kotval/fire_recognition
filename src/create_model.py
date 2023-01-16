@@ -156,7 +156,7 @@ def predict_fire(img_path, model, resize = True, output = False, imshow = False)
 
 
 # calls predict function as a print statement
-print(predict_fire('/Users/nealkotval/fire_recognition/test_cases/nonfire5.jpg', model, imshow = True, output= True))
+# print(predict_fire('/Users/nealkotval/fire_recognition/test_cases/nonfire5.jpg', model, imshow = True, output= True))
 
 #saves as tf-lite model
 converter = tf.lite.TFLiteConverter.from_keras_model(model)
