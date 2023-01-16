@@ -24,12 +24,12 @@ img_height = 256
 img_width= 256 
 
 # specifies directory in which to retrieve data
-data_path = "/Users/nealkotval/fire_recognition/data"
+data_path = r"C:\Users\tanis\fire_recognition\fire_data\data"
 
 # line to prevent out of memory errors
-gpus = tf.config.experimental.list_physical_devices('GPU')
-for gpu in gpus: 
-    tf.config.experimental.set_memory_growth(gpu, True)
+# gpus = tf.config.experimental.list_physical_devices('GPU')
+# for gpu in gpus: 
+#     tf.config.experimental.set_memory_growth(gpu, True)
 
 #sets up training dataset
 train_ds = tf.keras.utils.image_dataset_from_directory(
@@ -93,7 +93,7 @@ model.compile(optimizer='adam',
               metrics=['accuracy'])
 
 # sets amount of epochs for dataset 
-epochs = 15
+epochs = 20
 
 # passes datasets into model for training
 history = model.fit(
